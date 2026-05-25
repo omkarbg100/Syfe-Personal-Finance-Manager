@@ -4,7 +4,6 @@ import com.example.syfe.dto.TransactionRequestDTO;
 import com.example.syfe.dto.TransactionResponseDTO;
 import com.example.syfe.dto.TransactionUpdateDTO;
 import com.example.syfe.entity.User;
-import com.example.syfe.service.CurrentUserService;
 import com.example.syfe.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +24,12 @@ import java.time.LocalDate;
 public class TransactionController {
 
     private final TransactionService transactionService;
-    private final CurrentUserService currentUserService;
 
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> createTransaction(
             @Valid @RequestBody TransactionRequestDTO request,
             @AuthenticationPrincipal User user) {
-        return new ResponseEntity<>(transactionService.createTransaction(request, currentUserService.resolve(user)), HttpStatus.CREATED);
+        return new ResponseEntity<>(transactionService.createTransaction(request, user), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -40,11 +38,14 @@ public class TransactionController {
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false, name = "category") String categoryName,
+            @RequestParam(required = false, name = "categoryName") String categoryNameAlias,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
             
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date", "createdAt"));
-        return ResponseEntity.ok(transactionService.getTransactions(currentUserService.resolve(user), startDate, endDate, categoryId, pageable));
+        String resolvedCategoryName = categoryName != null ? categoryName : categoryNameAlias;
+        return ResponseEntity.ok(transactionService.getTransactions(user, startDate, endDate, categoryId, resolvedCategoryName, pageable));
     }
 
     @PutMapping("/{id}")
@@ -52,14 +53,14 @@ public class TransactionController {
             @PathVariable Long id,
             @Valid @RequestBody TransactionUpdateDTO request,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(transactionService.updateTransaction(id, request, currentUserService.resolve(user)));
+        return ResponseEntity.ok(transactionService.updateTransaction(id, request, user));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
-        transactionService.deleteTransaction(id, currentUserService.resolve(user));
+        transactionService.deleteTransaction(id, user);
         return ResponseEntity.noContent().build();
     }
 }

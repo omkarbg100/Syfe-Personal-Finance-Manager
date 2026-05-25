@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
 import Goals from './pages/Goals';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="transactions" element={<Transactions />} />
             <Route path="categories" element={<Categories />} />
             <Route path="goals" element={<Goals />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>

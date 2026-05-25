@@ -41,8 +41,12 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransactionResponseDTO> getTransactions(User user, LocalDate startDate, LocalDate endDate, Long categoryId, Pageable pageable) {
-        return transactionRepository.findTransactionsWithFilters(user, startDate, endDate, categoryId, pageable)
+    public Page<TransactionResponseDTO> getTransactions(User user, LocalDate startDate, LocalDate endDate, Long categoryId, String categoryName, Pageable pageable) {
+        Long resolvedCategoryId = categoryId;
+        if (resolvedCategoryId == null && categoryName != null && !categoryName.isBlank()) {
+            resolvedCategoryId = findCategory(categoryName, user).getId();
+        }
+        return transactionRepository.findTransactionsWithFilters(user, startDate, endDate, resolvedCategoryId, pageable)
                 .map(this::mapToDTO);
     }
 
@@ -50,11 +54,15 @@ public class TransactionService {
     public TransactionResponseDTO updateTransaction(Long id, TransactionUpdateDTO request, User user) {
         Transaction transaction = getTransactionAndVerifyOwnership(id, user);
 
-        Category category = findCategory(request.getCategory(), user);
-        
-        transaction.setAmount(request.getAmount());
-        transaction.setCategory(category);
-        transaction.setDescription(request.getDescription());
+        if (request.getAmount() != null) {
+            transaction.setAmount(request.getAmount());
+        }
+        if (request.getCategory() != null && !request.getCategory().isBlank()) {
+            transaction.setCategory(findCategory(request.getCategory(), user));
+        }
+        if (request.getDescription() != null) {
+            transaction.setDescription(request.getDescription());
+        }
         // Date cannot be updated as per business rules
 
         return mapToDTO(transactionRepository.save(transaction));

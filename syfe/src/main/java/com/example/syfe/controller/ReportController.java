@@ -3,7 +3,6 @@ package com.example.syfe.controller;
 import com.example.syfe.dto.MonthlyReportDTO;
 import com.example.syfe.dto.YearlyReportDTO;
 import com.example.syfe.entity.User;
-import com.example.syfe.service.CurrentUserService;
 import com.example.syfe.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,20 +15,19 @@ import org.springframework.web.bind.annotation.*;
 public class ReportController {
 
     private final ReportService reportService;
-    private final CurrentUserService currentUserService;
 
     @GetMapping("/monthly/{year}/{month}")
     public ResponseEntity<MonthlyReportDTO> getMonthlyReport(
             @PathVariable int year,
             @PathVariable int month,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(reportService.getMonthlyReport(currentUserService.resolve(user), year, month));
+        return ResponseEntity.ok(reportService.getMonthlyReport(user, year, month));
     }
 
     @GetMapping("/yearly/{year}")
     public ResponseEntity<YearlyReportDTO> getYearlyReport(
             @PathVariable int year,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(reportService.getYearlyReport(currentUserService.resolve(user), year));
+        return ResponseEntity.ok(reportService.getYearlyReport(user, year));
     }
 }

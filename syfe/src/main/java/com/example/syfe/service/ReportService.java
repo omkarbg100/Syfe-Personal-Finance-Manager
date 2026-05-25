@@ -5,6 +5,7 @@ import com.example.syfe.dto.YearlyReportDTO;
 import com.example.syfe.entity.Transaction;
 import com.example.syfe.entity.User;
 import com.example.syfe.enums.CategoryType;
+import com.example.syfe.exception.BadRequestException;
 import com.example.syfe.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public MonthlyReportDTO getMonthlyReport(User user, int year, int month) {
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Month must be between 1 and 12");
+        }
+
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 

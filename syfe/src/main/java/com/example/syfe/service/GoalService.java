@@ -7,6 +7,7 @@ import com.example.syfe.entity.SavingsGoal;
 import com.example.syfe.entity.Transaction;
 import com.example.syfe.entity.User;
 import com.example.syfe.enums.CategoryType;
+import com.example.syfe.exception.BadRequestException;
 import com.example.syfe.exception.ResourceNotFoundException;
 import com.example.syfe.repository.SavingsGoalRepository;
 import com.example.syfe.repository.TransactionRepository;
@@ -29,6 +30,8 @@ public class GoalService {
 
     @Transactional
     public GoalResponseDTO createGoal(GoalRequestDTO request, User user) {
+        validateGoalDates(request.getStartDate(), request.getTargetDate());
+
         SavingsGoal goal = SavingsGoal.builder()
                 .goalName(request.getGoalName())
                 .targetAmount(request.getTargetAmount())
@@ -59,8 +62,13 @@ public class GoalService {
         SavingsGoal goal = goalRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
 
-        goal.setTargetAmount(request.getTargetAmount());
-        goal.setTargetDate(request.getTargetDate());
+        if (request.getTargetAmount() != null) {
+            goal.setTargetAmount(request.getTargetAmount());
+        }
+        if (request.getTargetDate() != null) {
+            validateGoalDates(goal.getStartDate(), request.getTargetDate());
+            goal.setTargetDate(request.getTargetDate());
+        }
 
         return mapToDTO(goalRepository.save(goal), user);
     }
@@ -120,5 +128,11 @@ public class GoalService {
                 .progressPercentage(progressPercentage)
                 .remainingAmount(remainingAmount)
                 .build();
+    }
+
+    private void validateGoalDates(LocalDate startDate, LocalDate targetDate) {
+        if (startDate != null && targetDate != null && startDate.isAfter(targetDate)) {
+            throw new BadRequestException("Start date cannot be after target date");
+        }
     }
 }

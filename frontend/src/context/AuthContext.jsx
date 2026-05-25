@@ -3,7 +3,7 @@ import api from '../services/api';
 import { AuthContext } from './AuthContextValue';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState({ demo: true });
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -11,8 +11,6 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             // Assume valid for now, in a real app we might fetch user profile
             setUser({ token });
-        } else {
-            setUser({ demo: true });
         }
         setLoading(false);
     }, []);
@@ -36,7 +34,7 @@ export const AuthProvider = ({ children }) => {
             // This API uses stateless JWT logout, so local cleanup still completes.
         } finally {
             localStorage.removeItem('token');
-            setUser({ demo: true });
+            setUser(null);
         }
     };
 

@@ -7,6 +7,7 @@ const navItems = [
   { to: '/transactions', label: 'Transactions', icon: 'T' },
   { to: '/categories', label: 'Categories', icon: 'C' },
   { to: '/goals', label: 'Goals', icon: 'G' },
+  { to: '/profile', label: 'Profile', icon: 'P' },
 ];
 
 export default function Layout() {
