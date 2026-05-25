@@ -24,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final JwtTokenResolver jwtTokenResolver;
 
     @Override
     protected void doFilterInternal(
@@ -32,16 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         
-        final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
-        
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+
+        jwt = jwtTokenResolver.resolve(request);
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
-        
-        jwt = authHeader.substring(7);
+
         try {
             if (tokenBlacklistService.isBlacklisted(jwt)) {
                 filterChain.doFilter(request, response);
@@ -71,4 +71,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         filterChain.doFilter(request, response);
     }
+
 }
